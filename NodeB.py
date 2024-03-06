@@ -1,5 +1,6 @@
-import zmq
 
+import zmq
+from cipher import encrypt_message,decrypt_message
 context = zmq.Context()
 
 # Сокет для приема сообщений
@@ -16,5 +17,5 @@ print(f"Получено сообщение от узла A: {message.decode()}"
 
 # Отправляем ответ узлу A
 print("Отправка ответа узлу A...")
-sender.send(b"Привет от B!")
+sender.send("Привет от B!".encode())
 

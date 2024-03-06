@@ -1,6 +1,6 @@
 import zmq
 import time
-
+from cipher import encrypt_message,decrypt_message
 context = zmq.Context()
 
 # Сокет для отправки сообщений
@@ -13,7 +13,7 @@ receiver.connect("tcp://localhost:5556")
 
 # Отправляем сообщение узлу B
 print("Отправка сообщения узлу B...")
-sender.send(b"Привет от A!")
+sender.send("Привет от A!".encode())
 
 # Ждем ответа от узла B
 message = receiver.recv()
