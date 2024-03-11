@@ -1,20 +1,18 @@
+
+import time
 import zmq
 
 context = zmq.Context()
+socket = context.socket(zmq.REP)
+socket.bind("tcp://*:5555")
 
-# Сокет для приема сообщений
-receiver = context.socket(zmq.PULL)
-receiver.bind("tcp://*:5556")
+while True:
+    #  Wait for next request from client
+    message = socket.recv()
+    print(f"Received request: {message}")
 
-# Сокет для отправки ответов
-sender = context.socket(zmq.PUSH)
-sender.connect("tcp://localhost:5555")
+    #  Do some 'work'
+    time.sleep(1)
 
-# Ждем сообщения от узла A
-message = receiver.recv()
-print(f"Получено сообщение от узла A: {message.decode()}")
-
-# Отправляем ответ узлу A
-print("Отправка ответа узлу A...")
-sender.send(b"Привет от B!")
-
+    #  Send reply back to client
+    socket.send_string("World")
