@@ -37,32 +37,3 @@ other_ports = {"5555","5557", "5559"}
 
 sub2all()
 pub_function(port_pub)
-
-
-
-
-# import zmq
-
-# context = zmq.Context()
-# host = "localhost"
-# port = "5001"
-# # Сокет для приема сообщений
-# receiver = context.socket(zmq.SUB)
-# receiver.connect(f"tcp://{host}:{port}")
-# receiver.subscribe("")
-# print("ПОДКЛЮЧЕНО")
-# print(receiver.recv_string())
-
-
-
-
-# while True:
-#     # Ждем сообщения от NodeA
-#     msg = receiver.recv_string()
-#     print(f"собеседник: {msg.decode()}")
-
-#     # Отправляем ответ NodeA
-#     receiver.send(input("ПИШИ: ").encode())
-#     print("sent")
-
-#     time.sleep(1)
