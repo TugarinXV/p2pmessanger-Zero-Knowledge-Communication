@@ -1,3 +1,10 @@
+
+#
+#   Hello World client in Python
+#   Connects REQ socket to tcp://localhost:5555
+#   Sends "Hello" to server, expects "World" back
+#
+
 import zmq
 import time
 import threading
@@ -42,3 +49,16 @@ sub_thread = threading.Thread(target=sub2all, args=(port_pub,))
 sub_thread.start()
 time.sleep(1)
 print(pub_function(port_pub))
+# #  Socket to talk to server
+# print("Connecting to hello world server...")
+# socket = context.socket(zmq.REQ)
+# socket.connect("tcp://localhost:5555")
+
+# #  Do 10 requests, waiting each time for a response
+# for request in range(10):
+#     print(f"Sending request {request} ...")
+#     socket.send_string("Hello")
+
+#     #  Get the reply.
+#     message = socket.recv()
+#     print(f"Received reply {request} [ {message} ]")

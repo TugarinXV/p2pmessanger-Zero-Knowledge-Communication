@@ -34,9 +34,3 @@ def decrypt_message(key,nonce,ciphertext,tag):
         return "ошибочка"
         
 
-key = b"hh" * 8
-key2 = b"rr" * 8
-nonce,tag,ciphertext = encrypt_message(key,"1234")
-
-print(decrypt_message(key2,nonce,ciphertext,tag))
-
