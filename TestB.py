@@ -1,9 +1,8 @@
 from Client import Client
-import time
-b = Client(5556,[5555])
+
+b = Client(5556,[5555, 5557], "B")
 print("B Started")
 b.send("Hello from b")
-
 while True:
     print(flush=True)
     user_in = input(">> ")

@@ -1,11 +1,11 @@
-
-
 import zmq
-import time
 import threading
+import time
+import random
+
 
 class Client():
-    def __init__(self,port,other_ports):
+    def __init__(self,port,other_ports,test):
         self.port = port
         self.context = zmq.Context()
         self.socket_send = self.context.socket(zmq.PUB)
@@ -13,8 +13,10 @@ class Client():
 
         self.socket_receive = self.context.socket(zmq.SUB)
         self.socket_receive.subscribe("")
-
-
+        self.node_id = set()
+        self.node_id = random.randrange(00000, 99999)
+        self.test = test
+        
         for p in other_ports:
                 try:
                     self.socket_receive.connect(f"tcp://localhost:{p}")
@@ -23,7 +25,18 @@ class Client():
                     t.start()
                 except Exception as e:
                     print("Exception: " + e)
-                    continue
+                    continue    
+        heartbeat_thread = threading.Thread(target=self.heartbeat)
+        heartbeat_thread.daemon = True
+        heartbeat_thread.start()
+        
+    def heartbeat(self):
+        while True:
+            connect = True
+            message = f"{self.node_id}\n|{connect}\n{self.test}"
+            self.socket_send.send_string(f'{message}\n')
+            time.sleep(10)
+
 
     def send(self,message):
         try:
@@ -42,8 +55,6 @@ class Client():
                 print(f"RECV ZMQ Error: {zmq_error}")
             except Exception as e:
                 print(f"RECV Error occurred: {e}")
-
-
 
 # region test
 # context = zmq.Context() #контейнер для сокетов
