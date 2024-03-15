@@ -5,17 +5,25 @@ import random
 
 
 class Client():
-    def __init__(self,port,other_ports,test):
-        self.port = port
+    def __init__(self,other_ports,test):
         self.context = zmq.Context()
         self.socket_send = self.context.socket(zmq.PUB)
-        self.socket_send.bind(f"tcp://*:{self.port}")
-
+        self.socket_send.bind("tcp://*:%s" % 0)
         self.socket_receive = self.context.socket(zmq.SUB)
         self.socket_receive.subscribe("")
         self.node_id = set()
         self.node_id = random.randrange(00000, 99999)
         self.test = test
+        
+
+
+        self.ship = self.context.socket(zmq.REQ)
+        self.ship.connect(f"tcp://localhost:{"8001"}")
+        endpoint = self.ship.getsockopt_string(zmq.LAST_ENDPOINT)
+        self.ship.send_string(endpoint, "REQUEST_PORTS")
+
+
+
         
         for p in other_ports:
                 try:
