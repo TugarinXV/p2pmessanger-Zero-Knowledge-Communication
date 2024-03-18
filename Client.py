@@ -9,22 +9,21 @@ class Client():
         self.context = zmq.Context()
         self.socket_send = self.context.socket(zmq.PUB)
         self.socket_send.bind("tcp://*:%s" % 0)
+        # response = requests.get('https://httpbin.org/ip')
+        # ip_address = response.json()['origin']
+        # print("Мой внешний IP-адрес:", ip_address)
         self.socket_receive = self.context.socket(zmq.SUB)
         self.socket_receive.subscribe("")
         self.node_id = set()
         self.node_id = random.randrange(00000, 99999)
         self.test = test
         
+        if not other_ports:
+            self.ship = self.context.socket(zmq.REQ)
+            self.ship.connect(f"tcp://localhost:{"8001"}")
+            endpoint = self.ship.getsockopt_string(zmq.LAST_ENDPOINT)
+            self.ship.send_string(endpoint, "REQUEST_PORTS")
 
-
-        self.ship = self.context.socket(zmq.REQ)
-        self.ship.connect(f"tcp://localhost:{"8001"}")
-        endpoint = self.ship.getsockopt_string(zmq.LAST_ENDPOINT)
-        self.ship.send_string(endpoint, "REQUEST_PORTS")
-
-
-
-        
         for p in other_ports:
                 try:
                     self.socket_receive.connect(f"tcp://localhost:{p}")
