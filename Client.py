@@ -2,25 +2,32 @@ import zmq
 import threading
 import time
 import random
-
+import json
 
 class Client():
-    def __init__(self,other_ports,test):
+    def __init__(self,other_ports: set,test):
         self.context = zmq.Context()
         self.socket_send = self.context.socket(zmq.PUB)
         self.socket_send.bind("tcp://*:%s" % 0)
         self.socket_receive = self.context.socket(zmq.SUB)
         self.socket_receive.subscribe("")
         self.node_id = set()
-        self.node_id = random.randrange(00000, 99999)
+        self.node_id = random.randrange(00000, 99999) # пахнет багом. айди может попастся повторяющийся а коллекция - множество
         self.test = test
         
-        if not other_ports:
+        
+        def req_ports_from_beacon():
+            """функция для подключения к маяку за портами"""
             self.ship = self.context.socket(zmq.REQ)
             self.ship.connect(f"tcp://localhost:{"8001"}")
             endpoint = self.ship.getsockopt_string(zmq.LAST_ENDPOINT)
             self.ship.send_string(f"{self.node_id}|{endpoint}")
+            spacing = self.ship.recv_string()
+            spacing2 = json.loads(spacing)
+            for port in spacing2:
+                other_ports.add(port)
 
+        # блок для подключения к портам
         for p in other_ports:
                 try:
                     self.socket_receive.connect(f"tcp://localhost:{p}")
@@ -35,6 +42,9 @@ class Client():
         heartbeat_thread.start()
         
     def heartbeat(self):
+        '''функция для остлеживания онлайна:
+        каждые 10 секунд посылается сигнал для проверки.
+        если сообщение не доставлено - завершить цикл с данным клиентом'''
         while True:
             connect = True
             message = f"{self.node_id}\n|{connect}\n{self.test}"
