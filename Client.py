@@ -1,56 +1,63 @@
 import zmq
 import threading
-import time
-import random
 import json
+import uuid
 
 class Client():
-    def __init__(self,other_ports: set,test):
+    def __init__(self, filename="ports.json"):
         self.context = zmq.Context()
+        
+        self.other_ports = set()
+
         self.socket_send = self.context.socket(zmq.PUB)
         self.socket_send.bind("tcp://*:%s" % 0)
+
         self.socket_receive = self.context.socket(zmq.SUB)
         self.socket_receive.subscribe("")
+
         self.node_id = set()
-        self.node_id = random.randrange(00000, 99999) # пахнет багом. айди может попастся повторяющийся а коллекция - множество
-        self.test = test
-        
-        
+        self.node_id = uuid.uuid4()
+
+        self.ship = self.context.socket(zmq.REQ)
+        self.ship.bind("tcp://*:%s" % 0)
+        self.ship.connect(f"tcp://localhost:8001")
+        self.endpoint = self.ship.getsockopt_string(zmq.LAST_ENDPOINT)
+        self.my_port = self.endpoint.split(":")[-1]
+
         def req_ports_from_beacon():
             """функция для подключения к маяку за портами"""
-            self.ship = self.context.socket(zmq.REQ)
-            self.ship.connect(f"tcp://localhost:{"8001"}")
-            endpoint = self.ship.getsockopt_string(zmq.LAST_ENDPOINT)
-            self.ship.send_string(f"{self.node_id}|{endpoint}")
-            spacing = self.ship.recv_string()
+            self.ship.send_string(f"{self.node_id}|{self.my_port}")
+            spacing = self.ship.recv_json()
             spacing2 = json.loads(spacing)
             for port in spacing2:
-                other_ports.add(port)
+                self.other_ports.add(port)
+
+
+        def load_ports(filename="ports.json"):
+            try:
+                with open(filename, "r") as file:
+                    self.other_ports = json.load(file)
+                    return self.other_ports
+            except FileNotFoundError:
+                return set()
+
+        def save_ports(ports, filename="ports.json"):
+            with open(filename, "w") as file:
+                json.dump(list(ports), file)
+
+        if not self.other_ports:
+            load_ports()
+        else:
+            req_ports_from_beacon()
 
         # блок для подключения к портам
-        for p in other_ports:
-                try:
-                    self.socket_receive.connect(f"tcp://localhost:{p}")
-                    t = threading.Thread(target=self.recv)
-                    t.daemon = True
-                    t.start()
-                except Exception as e:
-                    print("Exception: " + e)
-                    continue    
-        heartbeat_thread = threading.Thread(target=self.heartbeat)
-        heartbeat_thread.daemon = True
-        heartbeat_thread.start()
-        
-    def heartbeat(self):
-        '''функция для остлеживания онлайна:
-        каждые 10 секунд посылается сигнал для проверки.
-        если сообщение не доставлено - завершить цикл с данным клиентом'''
-        while True:
-            connect = True
-            message = f"{self.node_id}\n|{connect}\n{self.test}"
-            self.socket_send.send_string(f'{message}\n')
-            time.sleep(10)
-
+        for p in self.other_ports:
+            try:
+                self.socket_receive.connect(f"tcp://localhost:{p}")
+            except Exception as e:
+                print("Exception: " + e)
+                continue        
+        save_ports()
 
     def send(self,message):
         try:
@@ -63,8 +70,11 @@ class Client():
     def recv(self):
         while True:
             try:
-                msg = self.socket_receive.recv_string()
-                print(msg,end="\n",flush=True)
+                if self.socket_receive.recv_string() == "ilb&lbp(*p)b8Y78BR6_+bpb*yb(*by(b9":
+                    self.ship.send_string(f"Daddy! i`m fine!{self.my_port}")
+                else:
+                    pass
+                print(self.socket_receive,end="\n",flush=True)
             except zmq.ZMQError as zmq_error:
                 print(f"RECV ZMQ Error: {zmq_error}")
             except Exception as e:
