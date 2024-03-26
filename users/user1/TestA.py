@@ -1,5 +1,6 @@
-from Client import Client
-a = Client(5555,[5556, 5557], "A")
+from Base.Client import Client
+a = Client()
+a.start_client()
 print("A Started")
 a.send("Hello from A")
 while True:
