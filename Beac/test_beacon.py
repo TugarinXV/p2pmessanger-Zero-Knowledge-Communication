@@ -1,4 +1,4 @@
-from Beacon import Beacon
+from Base.Beacon import Beacon
 
 if __name__ == "__main__":
     beacon = Beacon()
