@@ -30,7 +30,7 @@ class Beacon:
                     user_id, user_port = message.split('|')
                     if user_port not in self.connected_users:
                         self.connected_users.append(user_port)
-                        print(f"Новый пользователь {user_id} подключён на порту {user_port}")
+                        print(f"\nНовый пользователь {user_id} \nподключён на порту {user_port}")
                     
                     ports_to_send = [port for port in self.connected_users if port != user_port]
                     self.beacon.send_json(ports_to_send)
@@ -39,7 +39,7 @@ class Beacon:
 
     def heartbeat(self):
         while True:
-            self.heart.send_string("ilb&lbp(*p)b8Y78BR6_+bpb*yb(*by(b9")
+            self.heart.send_string("\nilb&lbp(*p)b8Y78BR6_+bpb*yb(*by(b9")
             time.sleep(4)
             try:
                 message = self.socket_receive.recv_string(zmq.NOBLOCK)
@@ -48,6 +48,6 @@ class Beacon:
                     user_port = match.group(1)
                     if user_port not in self.connected_users:
                         self.connected_users.append(user_port)
-                        print(f"Пользователь на порту {user_port} подключен.")
+                        print(f"\nПользователь на порту {user_port} в сети.")
             except zmq.Again:
                 pass
